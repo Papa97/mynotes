@@ -5,6 +5,7 @@ import 'package:mynotes/firebase_options.dart';
 import 'package:mynotes/view/login_view.dart';
 import 'package:mynotes/view/register_view.dart';
 import 'package:mynotes/view/verify_email_vire.dart';
+import 'dart:developer' as devtools show log;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,21 +34,57 @@ class HomePage extends StatelessWidget {
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
-            // final user = FirebaseAuth.instance.currentUser;
-            // print(user);
-            // if (user?.emailVerified ?? false) {
-            //   print('You are verified');
-            //   return const Text('Done');
-            // } else {
-            //   print('You are NOT verified');
-            //   return const VerifiedEmailView();
-            // }
+            final user = FirebaseAuth.instance.currentUser;
 
-            return const LoginView();
+            if (user != null) {
+              if (user.emailVerified) {
+                return const NotesView();
+              } else {
+                return const VerifiedEmailView();
+              }
+            } else {
+              return const LoginView();
+            }
+
           default:
             return const CircularProgressIndicator();
         }
       },
     );
+  }
+}
+
+enum MenuAction { logout }
+
+class NotesView extends StatefulWidget {
+  const NotesView({super.key});
+
+  @override
+  State<NotesView> createState() => _NotesViewState();
+}
+
+class _NotesViewState extends State<NotesView> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Main UI'),
+          actions: [
+            PopupMenuButton<MenuAction>(
+              onSelected: (value) {
+                devtools.log(value.toString());
+              },
+              itemBuilder: (context) {
+                return const [
+                  PopupMenuItem<MenuAction>(
+                    value: MenuAction.logout,
+                    child: Text('Log out'),
+                  )
+                ];
+              },
+            )
+          ],
+        ),
+        body: const Text('Hello World!'));
   }
 }
